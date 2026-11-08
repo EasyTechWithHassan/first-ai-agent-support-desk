@@ -1,0 +1,352 @@
+<title>Support Desk Worklist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one calm column on pale blue. Warning band first, data trail second, live filters and counts third, worklist table last. */
+:root{
+  color-scheme:light;
+  --bg:#f1f7fd;
+  --surface:#ffffff;
+  --ink:#0d2340;
+  --muted:#52688a;
+  --line:#d2e1f3;
+  --soft:#e6f0fb;
+  --accent:#1b5bc2;
+  --accent-ink:#ffffff;
+  --high:#b72f25;
+  --high-bg:#fdebe8;
+  --med:#245fc9;
+  --med-bg:#e4edff;
+  --low:#5f7692;
+  --low-bg:#e9eef5;
+  --review:#8a4f00;
+  --review-bg:#fff2d2;
+  --review-line:#e2a528;
+  --font:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Roboto,Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--font);
+  font-size:15px;
+  line-height:1.5;
+  padding-block:28px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.wrap>*{min-width:0}
+h1{font-size:28px;line-height:1.15;margin:0;letter-spacing:-.01em;font-weight:700;text-wrap:balance}
+h2{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:700}
+p{margin:0}
+.eyebrow{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px}
+.sub{color:var(--muted);max-width:68ch;margin-top:8px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* Missing data warning */
+.warn{
+  background:#ffe08a;
+  border:4px solid #b36b00;
+  border-radius:12px;
+  padding:20px 22px;
+  display:flex;gap:18px;align-items:center;flex-wrap:wrap;
+  color:#3b2200;
+  box-shadow:0 0 0 6px rgba(226,165,40,.28);
+}
+.warn .mark{
+  flex:none;width:52px;height:52px;border-radius:50%;
+  background:#b36b00;color:#fff;font-weight:800;font-size:32px;
+  display:grid;place-items:center;
+}
+.warn .txt{flex:1 1 320px;min-width:0}
+.warn .tag{
+  display:inline-block;background:#3b2200;color:#ffe08a;font-size:12px;letter-spacing:.1em;
+  text-transform:uppercase;font-weight:800;border-radius:4px;padding:2px 8px;margin-bottom:6px;
+}
+.warn strong{display:block;font-size:21px;line-height:1.25;margin-bottom:4px;color:#2b1700}
+.warn p{font-size:15px;color:#3b2200}
+.warn button{
+  background:#3b2200;border:2px solid #3b2200;color:#fff;
+  border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;
+}
+.warn button:hover{background:#5a3500}
+
+/* Data trail */
+.trail{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;list-style:none;padding:0;margin:0}
+.trail li{
+  background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  padding:10px 14px;flex:1 1 130px;min-width:0;
+}
+.trail .n{font-size:24px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.trail .l{font-size:13px;color:var(--muted)}
+.trail li.out .n{color:var(--muted)}
+.trail li.end{background:var(--soft);border-color:#b9d2f0}
+.trail li.end .n{color:var(--accent)}
+
+/* Live panels */
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:16px}
+@media (max-width:760px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px}
+.big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.big .num{font-size:52px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:var(--accent)}
+.big .of{color:var(--muted);font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface);border:1.5px solid var(--line);border-radius:999px;
+  padding:7px 14px;cursor:pointer;font-weight:600;
+}
+.chip .c{
+  background:var(--soft);border-radius:999px;padding:0 8px;min-width:26px;text-align:center;
+  font-variant-numeric:tabular-nums;font-size:13px;
+}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip[aria-pressed="true"] .c{background:rgba(255,255,255,.22);color:#fff}
+.hint{font-size:13px;color:var(--muted);margin-top:12px}
+
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar{
+  display:grid;grid-template-columns:92px minmax(0,1fr) 34px;gap:12px;align-items:center;
+  background:transparent;border:1.5px solid transparent;border-radius:8px;
+  padding:6px 8px;text-align:left;cursor:pointer;width:100%;
+}
+.bar:hover{background:var(--bg)}
+.bar[aria-pressed="true"]{border-color:var(--accent);background:var(--soft)}
+.bar .lab{font-weight:600}
+.bar .track{display:block;height:18px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.bar .fill{display:block;height:100%;width:0;border-radius:3px;transition:width .2s ease}
+.bar[data-key="Needs review"] .lab{color:var(--review)}
+.bar .cnt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.f-High{background:var(--high)}
+.f-Medium{background:var(--med)}
+.f-Low{background:var(--low)}
+.f-Needs{background:repeating-linear-gradient(45deg,var(--review) 0 6px,#c98a1d 6px 12px)}
+@media (prefers-reduced-motion:reduce){.bar .fill{transition:none}}
+
+/* Toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.search{flex:1 1 260px;min-width:0;position:relative}
+.search input{
+  width:100%;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;
+  padding:10px 12px;
+}
+.search input:focus-visible{border-color:var(--accent)}
+.toolbar .status{color:var(--muted);font-variant-numeric:tabular-nums}
+.toolbar .status b{color:var(--ink)}
+.clear{
+  background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;
+}
+.clear:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.clear:disabled{opacity:.45;cursor:default}
+
+/* Table */
+.tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th{
+  text-align:left;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+  background:var(--soft);padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap
+}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+td.id{font-family:var(--mono);font-size:13.5px;font-weight:600;white-space:nowrap}
+tr.nr td{background:#fff9e8}
+.pill{
+  display:inline-block;border-radius:999px;padding:1px 10px;font-size:13px;font-weight:700;white-space:nowrap
+}
+.p-High{background:var(--high-bg);color:var(--high)}
+.p-Medium{background:var(--med-bg);color:var(--med)}
+.p-Low{background:var(--low-bg);color:var(--low)}
+.p-Needs{background:var(--review-bg);color:var(--review);border:1.5px solid var(--review-line)}
+.s-Open{background:var(--soft);color:#17479c}
+.s-Prog{background:#e3f4ee;color:#0c6147}
+.note{display:block;font-size:12px;color:var(--review);margin-top:2px}
+.empty{text-align:center;color:var(--muted);padding:28px 14px}
+.foot{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Tutorial · fictional data</div>
+    <h1>Support Desk Worklist</h1>
+    <p class="sub">Tickets that still need work, built from a synthetic file. Closed tickets are left out. Order is High, Medium, Low, Needs review, then ticket ID.</p>
+  </header>
+
+  <section class="warn" role="alert" aria-labelledby="warn-title">
+    <div class="mark" aria-hidden="true">!</div>
+    <div class="txt">
+      <span class="tag">Action needed</span>
+      <strong id="warn-title"></strong>
+      <p id="warn-body"></p>
+    </div>
+    <button type="button" id="warn-btn">Show Needs review only</button>
+  </section>
+
+  <section aria-label="How the file was cleaned">
+    <h2>Data trail (fixed)</h2>
+    <ol class="trail">
+      <li><div class="n" id="t-raw"></div><div class="l">rows in the file</div></li>
+      <li class="out"><div class="n" id="t-dup"></div><div class="l">exact duplicate rows removed</div></li>
+      <li><div class="n" id="t-uniq"></div><div class="l">unique tickets</div></li>
+      <li class="out"><div class="n" id="t-closed"></div><div class="l">Closed tickets left out</div></li>
+      <li class="end"><div class="n" id="t-work"></div><div class="l">tickets on the worklist</div></li>
+    </ol>
+  </section>
+
+  <section class="grid" aria-label="Live counts">
+    <div class="panel">
+      <h2>Tickets shown</h2>
+      <div class="big"><span class="num" id="shown">0</span><span class="of" id="of"></span></div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by status"></div>
+      <p class="hint">Status counts follow your search and priority choice.</p>
+    </div>
+    <div class="panel">
+      <h2>Priority</h2>
+      <div class="bars" id="bars" role="group" aria-label="Filter by priority"></div>
+      <p class="hint">Bars follow your search and status choice. Select a bar to filter by that priority.</p>
+    </div>
+  </section>
+
+  <section aria-label="Worklist">
+    <div class="toolbar">
+      <div class="search">
+        <label for="q" style="position:absolute;left:-9999px">Search tickets</label>
+        <input id="q" type="search" placeholder="Search ID, area, status or summary" autocomplete="off">
+      </div>
+      <span class="status" id="status" aria-live="polite"></span>
+      <button type="button" class="clear" id="clear">Clear filters</button>
+    </div>
+    <div class="tablewrap" style="margin-top:12px">
+      <table>
+        <thead><tr><th>Ticket</th><th>Priority</th><th>Status</th><th>Area</th><th>Summary</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <p class="foot">Synthetic tutorial data. Nothing here is connected to a live ticket system.</p>
+</div>
+
+<script id="data" type="application/json">{"meta": {"raw_rows": 22, "duplicates_removed": 2, "unique_tickets": 20, "closed_excluded": 4, "worklist": 16, "blank_priority_details": [{"ticket_id": "DEMO-116", "area": "Laptop"}]}, "records": [{"ticket_id": "DEMO-101", "area": "Login", "priority": "High", "status": "Open", "summary": "All staff cannot sign in"}, {"ticket_id": "DEMO-104", "area": "Network", "priority": "High", "status": "Open", "summary": "Branch connection unavailable"}, {"ticket_id": "DEMO-107", "area": "Security", "priority": "High", "status": "In progress", "summary": "Suspicious login alert review"}, {"ticket_id": "DEMO-112", "area": "Access", "priority": "High", "status": "Open", "summary": "Finance team locked out"}, {"ticket_id": "DEMO-117", "area": "Network", "priority": "High", "status": "In progress", "summary": "Intermittent packet loss"}, {"ticket_id": "DEMO-102", "area": "Email", "priority": "Medium", "status": "In progress", "summary": "Shared mailbox delayed"}, {"ticket_id": "DEMO-105", "area": "Access", "priority": "Medium", "status": "Open", "summary": "New starter needs account"}, {"ticket_id": "DEMO-109", "area": "Application", "priority": "Medium", "status": "Open", "summary": "Export button returns error"}, {"ticket_id": "DEMO-110", "area": "Laptop", "priority": "Medium", "status": "In progress", "summary": "Battery drains quickly"}, {"ticket_id": "DEMO-115", "area": "Email", "priority": "Medium", "status": "Open", "summary": "Calendar sharing failure"}, {"ticket_id": "DEMO-118", "area": "Security", "priority": "Medium", "status": "Open", "summary": "Device scan needs follow-up"}, {"ticket_id": "DEMO-120", "area": "Application", "priority": "Medium", "status": "Open", "summary": "Form attachments not saving"}, {"ticket_id": "DEMO-106", "area": "Storage", "priority": "Low", "status": "Open", "summary": "Archive old team files"}, {"ticket_id": "DEMO-111", "area": "Network", "priority": "Low", "status": "Open", "summary": "Guest WiFi label incorrect"}, {"ticket_id": "DEMO-114", "area": "Application", "priority": "Low", "status": "Open", "summary": "Change dashboard heading"}, {"ticket_id": "DEMO-116", "area": "Laptop", "priority": "Needs review", "status": "Open", "summary": "Repeated unexpected restarts"}]}</script>
+<script>
+var DATA = JSON.parse(document.getElementById("data").textContent);
+var META = DATA.meta, RECORDS = DATA.records;
+
+//LOGIC-START
+var PRIORITIES = ["High", "Medium", "Low", "Needs review"];
+var STATUSES = ["Open", "In progress"];
+function matches(r, s, skip) {
+  if (skip !== "status" && s.status && r.status !== s.status) return false;
+  if (skip !== "priority" && s.priority && r.priority !== s.priority) return false;
+  if (s.q) {
+    var hay = (r.ticket_id + " " + r.area + " " + r.priority + " " + r.status + " " + r.summary).toLowerCase();
+    if (hay.indexOf(s.q) === -1) return false;
+  }
+  return true;
+}
+function compute(records, s) {
+  var out = { shown: [], statusCounts: {}, prioCounts: {}, statusTotal: 0, prioTotal: 0 };
+  STATUSES.forEach(function (k) { out.statusCounts[k] = 0; });
+  PRIORITIES.forEach(function (k) { out.prioCounts[k] = 0; });
+  records.forEach(function (r) {
+    if (matches(r, s, null)) out.shown.push(r);
+    if (matches(r, s, "status")) { out.statusCounts[r.status]++; out.statusTotal++; }
+    if (matches(r, s, "priority")) { out.prioCounts[r.priority]++; out.prioTotal++; }
+  });
+  return out;
+}
+//LOGIC-END
+
+var state = { q: "", status: "", priority: "" };
+var $ = function (id) { return document.getElementById(id); };
+function cls(p) { return p === "Needs review" ? "Needs" : p; }
+
+// Fixed facts from the cleaning step
+$("t-raw").textContent = META.raw_rows;
+$("t-dup").textContent = "−" + META.duplicates_removed;
+$("t-uniq").textContent = META.unique_tickets;
+$("t-closed").textContent = "−" + META.closed_excluded;
+$("t-work").textContent = META.worklist;
+
+var nb = META.blank_priority_details.length;
+$("warn-title").textContent = "Missing data: " + nb + (nb === 1 ? " ticket has" : " tickets have") + " no priority.";
+$("warn-body").textContent =
+  META.blank_priority_details.map(function (d) { return d.ticket_id + " (" + d.area + ")"; }).join(", ") +
+  " arrived with a blank priority field. " + (nb === 1 ? "It is" : "They are") +
+  " listed as Needs review at the bottom of the worklist. Priority was not guessed and was not inferred from the summary. A person must set it.";
+
+// Build controls once
+var chipsEl = $("chips"), barsEl = $("bars");
+var chipDefs = [{ key: "", label: "All active" }].concat(STATUSES.map(function (k) { return { key: k, label: k }; }));
+chipDefs.forEach(function (d) {
+  var b = document.createElement("button");
+  b.type = "button"; b.className = "chip"; b.dataset.key = d.key;
+  b.innerHTML = '<span class="l"></span><span class="c"></span>';
+  b.querySelector(".l").textContent = d.label;
+  b.addEventListener("click", function () { state.status = d.key; render(); });
+  chipsEl.appendChild(b);
+});
+PRIORITIES.forEach(function (p) {
+  var b = document.createElement("button");
+  b.type = "button"; b.className = "bar"; b.dataset.key = p;
+  b.innerHTML = '<span class="lab"></span><span class="track"><span class="fill"></span></span><span class="cnt"></span>';
+  b.querySelector(".lab").textContent = p;
+  b.querySelector(".fill").classList.add("f-" + cls(p));
+  b.addEventListener("click", function () { state.priority = (state.priority === p ? "" : p); render(); });
+  barsEl.appendChild(b);
+});
+
+function render() {
+  var c = compute(RECORDS, state);
+  $("shown").textContent = c.shown.length;
+  $("of").textContent = "of " + RECORDS.length + " on the worklist";
+  $("status").innerHTML = "Showing <b>" + c.shown.length + "</b> of " + RECORDS.length + " tickets";
+
+  Array.prototype.forEach.call(chipsEl.children, function (b) {
+    var k = b.dataset.key;
+    b.setAttribute("aria-pressed", String(state.status === k));
+    b.querySelector(".c").textContent = k === "" ? c.statusTotal : c.statusCounts[k];
+  });
+  Array.prototype.forEach.call(barsEl.children, function (b) {
+    var k = b.dataset.key, n = c.prioCounts[k];
+    b.setAttribute("aria-pressed", String(state.priority === k));
+    b.querySelector(".cnt").textContent = n;
+    b.querySelector(".fill").style.width = (c.prioTotal ? (n / c.prioTotal * 100) : 0) + "%";
+  });
+
+  var tb = $("rows");
+  tb.textContent = "";
+  if (!c.shown.length) {
+    var tr0 = document.createElement("tr"), td0 = document.createElement("td");
+    td0.colSpan = 5; td0.className = "empty"; td0.textContent = "No tickets match the current filters.";
+    tr0.appendChild(td0); tb.appendChild(tr0);
+  }
+  c.shown.forEach(function (r) {
+    var tr = document.createElement("tr");
+    if (r.priority === "Needs review") tr.className = "nr";
+    function cell(text, klass) { var td = document.createElement("td"); if (klass) td.className = klass; td.textContent = text; tr.appendChild(td); return td; }
+    cell(r.ticket_id, "id");
+    var tp = document.createElement("td");
+    var pill = document.createElement("span"); pill.className = "pill p-" + cls(r.priority); pill.textContent = r.priority;
+    tp.appendChild(pill);
+    if (r.priority === "Needs review") { var nt = document.createElement("span"); nt.className = "note"; nt.textContent = "Blank in the source file"; tp.appendChild(nt); }
+    tr.appendChild(tp);
+    var ts = document.createElement("td");
+    var sp = document.createElement("span"); sp.className = "pill s-" + (r.status === "In progress" ? "Prog" : "Open"); sp.textContent = r.status;
+    ts.appendChild(sp); tr.appendChild(ts);
+    cell(r.area);
+    cell(r.summary);
+    tb.appendChild(tr);
+  });
+
+  $("clear").disabled = !(state.q || state.status || state.priority);
+}
+
+$("q").addEventListener("input", function (e) { state.q = e.target.value.trim().toLowerCase(); render(); });
+$("clear").addEventListener("click", function () { state = { q: "", status: "", priority: "" }; $("q").value = ""; render(); });
+$("warn-btn").addEventListener("click", function () { state.priority = "Needs review"; render(); $("rows").scrollIntoView({ block: "nearest" }); });
+render();
+</script>

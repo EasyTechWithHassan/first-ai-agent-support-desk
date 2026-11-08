@@ -1,0 +1,23 @@
+ticket_id,area,priority,status,summary
+DEMO-101,Login,High,Open,All staff cannot sign in
+DEMO-102,Email,Medium,In progress,Shared mailbox delayed
+DEMO-103,Laptop,Low,Closed,Replace worn keyboard
+DEMO-104,Network,High,Open,Branch connection unavailable
+DEMO-105,Access,Medium,Open,New starter needs account
+DEMO-106,Storage,Low,Open,Archive old team files
+DEMO-107,Security,High,In progress,Suspicious login alert review
+DEMO-108,Email,Low,Closed,Signature format updated
+DEMO-104,Network,High,Open,Branch connection unavailable
+DEMO-109,Application,Medium,Open,Export button returns error
+DEMO-110,Laptop,Medium,In progress,Battery drains quickly
+DEMO-111,Network,Low,Open,Guest WiFi label incorrect
+DEMO-112,Access,High,Open,Finance team locked out
+DEMO-113,Storage,Medium,Closed,Folder permission restored
+DEMO-114,Application,Low,Open,Change dashboard heading
+DEMO-115,Email,Medium,Open,Calendar sharing failure
+DEMO-116,Laptop,,Open,Repeated unexpected restarts
+DEMO-117,Network,High,In progress,Intermittent packet loss
+DEMO-115,Email,Medium,Open,Calendar sharing failure
+DEMO-118,Security,Medium,Open,Device scan needs follow-up
+DEMO-119,Access,Low,Closed,Remove departed user access
+DEMO-120,Application,Medium,Open,Form attachments not saving
